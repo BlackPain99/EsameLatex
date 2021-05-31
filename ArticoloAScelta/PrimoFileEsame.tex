@@ -1,0 +1,165 @@
+%!TEX encoding = UTF-8 Unicode
+%!TEX TS-program = pdflatex
+\documentclass[a4paper, 12pt]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english, italian]{babel}		
+\usepackage{amsmath,amssymb}
+\usepackage{amsthm}
+\usepackage{hyperref}
+
+\theoremstyle{definition} \newtheorem{defin}{Definizione}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+	
+	\author{Lorenzo~D'Antoni}
+	\title{Appunti di Linguaggi di Programmazione}
+	\maketitle
+	\thispagestyle{empty}
+	\pagebreak
+	
+	\tableofcontents
+	\thispagestyle{empty}
+	\setcounter{page}{0} 
+	\pagebreak
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	\section{Introduzione}
+		Per definire un linguaggio di programmazione è necessario darne:
+		\begin{itemize}
+			\item la sintassi (cioè una specifica dell'insieme dei programmi)
+			\item la semantica (cioè una descrizione dell'effetto dell'esecuzione dei programmi)
+		\end{itemize}
+		Nell'implementazione di un linguaggio, è possibile distinguere diverse componenti. Il parser o analizzatore sintattico riceve in input una stringa di simboli e stabilisce se questa è in accordo con la sintassi, cioè verifica le regole della grammatica data. In caso positivo, il parser provvede anche a convertire la stringa di simboli in una rappresentazione interna più comoda per le fasi successive. Il type-checker o analizzatore statico riceve in input un programma e stabilisce se questo è un programma corretto, cioè verifica i vincoli contestuali dati. Infine l'interprete riceve in input un programma (la cui correttezza è stata provata nella fase precedente) e ne simula l'esecuzione.
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	\section{Stringhe e linguaggi}
+		Un programma in un linguaggio di programmazione può essere visto come una stringa di simboli costruita in modo da soddisfare certe regole (la sintassi del linguaggio). 
+		
+		Per illustrare il modo in cui viene in genere descritta formalmente la sintassi, occorre anzitutto precisare cosa si intende per simbolo, stringa e linguaggio.
+		\begin{defin}[Alfabeto]
+			Un alfabeto è un insieme finito non vuoto di oggetti detti simboli.
+		\end{defin}
+		\begin{defin}[Stringa]
+			\label{defStringa}
+			Una stringa $u$ su un alfabeto $A$ è una funzione (totale) da $[1,n]$ in $A$, per qualche $n\in \mathbb{N}$; $n$ si dice lunghezza di $u$, e si indica con $\lvert u \rvert$.
+		\end{defin}
+		\noindent L'unica stringa $u$ tale che $\lvert u \rvert = 0$ si chiama stringa vuota e si indica con $\Lambda$; l'insieme delle stringhe su $A$ si indica con $A^*$ e l'insieme delle stringhe non vuote su $A$ si indica con $A^+$. Indicando con $A^n$, per $n\in \mathbb{N}$, l'insieme delle funzioni da $[1,n]$ in $A$, si ha dunque per definizione che $A^+=\cup_{n>0}A^n$.
+		\begin{defin}[Linguaggio]
+			Un linguaggio su un alfabeto $A$ è un insieme di stringhe su $A$.
+		\end{defin}
+		\noindent Si noti che $A^+$ è sempre un insieme infinito; più precisamente è un insieme numerabile.
+	
+		In genere, scriviamo le stringhe utilizzando la rappresentazione per giustapposizione, cioè semplicemente scrivendo i simboli uno dopo l'altro da sinistra a destra. Per esempio se $A_{it}={a,b,c,d,\ldots,z}$ è l'alfabeto italiano, una stringa è la parola italiana \emph{amica}. Tuttavia, l'unico modo rigoroso di definire tale stringa è di dire che essa è la funzione $v\colon [1,5]\to A_{it}$ definita da:
+		\begin{equation*}
+			v(i)=\begin{cases}
+				a & \text{se $i=1$}\\
+				m & \text{se $i=2$}\\
+				i & \text{se $i=3$}\\
+				c & \text{se $i=4$}\\
+				a & \text{se $i=5$}
+			\end{cases}
+		\end{equation*}
+		Infatti, la rappresentazione per giustapposizione (oltre che arbitraria e legata a ragioni culturali: altri popoli utilizzano per esempio la rappresentazione da destra a sinistra), può risultare ambigua per certi alfabeti. 
+	
+		Ad esempio con questa rappresentazione la stringa sull'alfabeto $D_{it}$ formata dalle due parole \emph{arco} e \emph{baleno} è indistinguibile da quella formata dall'unica parola \emph{arcobaleno}. In casi di questo genere si ricorre tipicamente all'uso di \emph{separatori}, cioè simboli che non fanno parte dell'alfabeto ma servono solo come convenzione per delimitare i simboli dell'alfabeto, come il \emph{blank}.
+	
+		Un'altra rappresentazione spesso usata è quella a $n$-uple, cioè un elemento $w\in A^n$ definito da
+		\begin{equation*}
+			w(i)=\begin{cases}
+				a_1 & \text{se $i=1$}\\
+				a_2 & \text{se $i=2$}\\
+				\vdots \\
+				a_n & \text{se $i=n$}
+			\end{cases}
+		\end{equation*}
+		è scritto come $(a_1,\ldots, a_n)$. La stringa precedente $v$ in questo modo viene scritta $(a,m,i,c,a)$. Anche questa rappresentazione può creare ambiguità, nel caso in cui i separatori parentesi aperta, chiusa e virgola facciano parte dell'alfabeto.
+	
+		L'unico modo rigoroso e indipendente dalla rappresentazione di definire le stringhe su un alfabeto è quello dato nella Def. \ref{defStringa}, ed è conveniente richiamarsi a questa definizione tutte le volte che sorge qualche problema di ambiguità.
+		\begin{defin}[Concatenazione di stringhe e linguaggi]
+			Se $v$ e $w$ sono due stringhe su un alfabeto $A$ di lunghezza $n$ e $m$ rispettivamente, allora $v \cdot w$ è la stringa su A, di lunghezza $n+m$, definita da
+			\begin{equation*}
+				(v \cdot w)(k)=\begin{cases}
+					v(k) & \text{se $1 \leq k \leq n$}\\
+					w(k-n) & \text{se $n < k \leq n+m$}
+				\end{cases}
+			\end{equation*}
+			Inoltre $v^0 = \Lambda$, $v^{n+1}=v \cdot v^n$.
+		\end{defin}
+		\noindent Se $X$, $Y$ sono insiemi di stringhe su $A$, $X \cdot Y= \{x \cdot y \mid x \in X, y \in Y\}$
+	
+		Utilizzando l'ultima definizione, si può dare la seguente definizione induttiva di $A^n$, per $A$ alfabeto e $n \in \mathbb{N}$:
+		\begin{gather*}
+			X^0=\{\Lambda\} \\
+			X^{n+1}=X \cdot X^n
+		\end{gather*}
+		Un altro esempio ``classico'' di stringhe è dato dai numeri (interi positivi) nella rappresentazione in base $10$, che sono esattamente le stringhe su $Digit=\{0,1,\ldots ,9\}$, se si accetta $0$ in posizione non significativa (es: $002$); altrimenti sono un sottoinsieme proprio $Num$ di queste stringhe, descritto da
+		\begin{equation*}
+			Num = \{v \mid v(1) \neq 0 \  \text{oppure}\  \lvert v \rvert = 1\}.
+		\end{equation*}
+		Gli elementi di $Num$ vengono chiamati \emph{numerali}.
+	
+		Analogamente le espressioni costruite a partire dai numerali con le operazioni $+$ e $*$ e le parentesi tonde $($ e $)$ sono un linguaggio sull'alfabeto $Digit\,\cup\,\{+,*,(,)\}$. Alternativamente possono essere viste come un linguaggio su $Num\,\cup\,\{+,*,(,)\}$, ma in questo caso l'alfabeto non è più finito.
+	
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+	\section{Grammatiche context-free}
+		Il modo usuale in cui si trova descritta formalmente la sintassi di un linguaggio è tramite una grammatica libera da contesto. Tale metodo deriva dagli studi di Noam Chomsky negli anni cinquanta sulle grammatiche per i linguaggi naturali. La Backus \& Naur Form (BNF), o Backus Normal Form è un particolare stile di rappresentazione di una grammatica libera da contesto, e fu introdotta alla fine degli anni cinquanta per descrivere la sintassi dell'Algol 60.
+		\begin{defin}[Grammatica]
+		Una grammatica libera da contesto è una tripla $(T,N,P)$ dove:
+			\begin{itemize}
+				\item $T$ è un alfabeto di simboli, detti terminali,
+				\item $N$ è un alfabeto di simboli (diversi da quelli di T), detti non terminali,
+				\item $P$ è un insieme finito di coppie dette produzioni $(A,\alpha)$ con $A\in N$ e $\alpha\in (T\cup N)^*$ (cioè, $A$ è un simbolo non terminale e $\alpha$ è una stringa formata da simboli terminali e non terminali). Nello stile BNF le produzioni sono scritte nella forma $A::=\alpha$.  
+			\end{itemize}
+		\end{defin}
+		\noindent Useremo $u$, $v$, $w$ per indicare generiche stringhe di terminali e $\alpha$, $\beta$, $\gamma$ per indicare generiche stringhe di terminali e non terminali. I terminali sono i simboli del linguaggio che si vuole definire tramite la grammatica, mentre i non terminali indicano i possibili \lq\lq tipi\rq\rq{} di oggetti sintattici.
+	
+		Nello stile BNF, si usa l'abbreviazione $A::=\alpha \mid \beta \mid \gamma \ldots$ per indicare le produzioni $A::=\alpha$, $A::=\beta$, $A::=\gamma \ldots$
+	
+		Nel seguente esempio vengono definite espressioni intere e booleane utilizzando due diversi non terminali.
+		\begin{align*}
+			Exp &::= (Exp + Exp) \mid (Exp * Exp) \mid Num \\
+			Num &::= 0 \mid 1 \mid \ldots \\
+			BExp &::= \text{true} \mid \text{false} \mid (BExp\enspace \text{or} \enspace Bexp) \mid (BExp\enspace \text{and} \enspace BExp) \mid (Exp = Exp)
+		\end{align*}
+		Per capire in che senso una grammatica definisca un linguaggio di programmazione, introduciamo il concetto di derivazione.
+		\begin{defin}[Derivazione in un passo]
+			Sia data una grammatica $G=(T,N,P)$ e due stringhe $\beta,\gamma \in (T \cup N)^*$. Diremo che $\gamma$ è derivabile da $\beta$ in un passo se e solo se esistono delle stringhe $\alpha_1,\alpha_2 \in (T \cup N)^*$, ed esiste in $P$ una produzione $A ::= \alpha$, tali che $\beta = \alpha_1 A \alpha_2$ e $\gamma=\alpha_1\alpha\alpha_2$. Diremo anche che $\beta \to \gamma$ è una derivazione (in un passo).
+		\end{defin}
+		\noindent È chiario che $\to$ è una relazione su $(T \cup N)^*$. Indicheremo con $\to^*$ la sua chiusura riflessiva e transitiva, e diremo che $\gamma$ è derivabile da $\beta$ se vale che $\beta \to^* \gamma$. Diremo anche che $\beta \to^* \gamma$ è una derivazione.
+	
+		Il linguaggio generato da una grammatica $G$, rispetto a un suo non terminale $A$, è l'insieme delle stringhe composte solo di terminali che si possono derivare da $A$. Formalmente:
+		\begin{defin}[Linguaggio generato da una grammatica]
+			Sia data una grammatica $G=(T,N,P)$ e un non terminale $A \in N$. Il linguaggio generato da $G$, rispetto ad $A$, è l'insieme:
+			\begin{equation*}
+				L_A(G) = \{w \in T^* \mid A \to^* w\}\text{.}
+			\end{equation*}
+		\end{defin}
+		\noindent Con l'abuso di terminologia già menzionato, si parla del linguaggio generato da $G$ anche intendendo la famiglia $\{L_A(G)\}_{A \in N}$. Per semplicità, si usa spesso lo stesso nome per denotare una categoria sintattica e il linguaggio generato corrispondente. Occorre però aver presente che sono due concetti distinti: il primo è semplicemente un simbolo, il secondo è un insieme di stringhe (di simboli terminali).
+	
+		Consideriamo per esempio le seguenti grammatiche $G1$, $G2$, $G3$, $G4.$
+		\begin{align*}
+			S &::= \text{a}S \mid S\text{b} \mid \text{c} \\
+			S &::= \text{a}S\text{b} \mid \Lambda \\
+			S &::= \text{a}S\text{b} \mid \text{ab} \\
+			S &::= \text{a}S\text{a} \mid \text{b}S\text{b} \mid \Lambda \mid \text{a} \mid \text{b}
+		\end{align*}
+		I linguaggi generati da queste grammatiche sono rispettivamente:
+		\begin{align*}
+		L(G1) &= \{a^nc\,b^m \mid n,m \geq 0\} \\
+		L(G2) &= \{a^nb^n \mid n \geq 0\} \\
+		L(G3) &= \{a^nb^n \mid n \geq 1\} \\
+		L(G4) &= \{u \mid u\in \{a,b\}^*, 	u\,\text{palindroma}\}\text{.}
+		\end{align*}
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+\end{document}
